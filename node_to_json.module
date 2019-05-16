@@ -1,0 +1,58 @@
+<?php
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_entity_presave().
+ */
+function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  //get the module config
+  $default_config = \Drupal::config('node_to_json.settings');
+  $path = $default_config->get('node_to_json.path');
+  $data = [];
+  //dpm($entity->bundle());
+  //the type of entity is validated
+  switch ($entity->bundle()) {
+    // Here you modify only your day content type
+    case 'static_pages':
+      //dpm(get_class_methods($entity));
+      //dpm($entity->getFieldDefinitions());
+      //dpm($path);
+      //get data
+      if($entity->hasField('field_json_file_name')){
+        $title = $entity->get('field_json_file_name')->value;
+      }else{
+        $title = $entity->getTitle();
+      }
+      $data['body'] = $entity->get('body')->value;
+      //$entity->setTitle($entity->get('field_date')->value);
+      $file = file_save_data(json_encode($data), "public://json/".$title.".json", FILE_EXISTS_REPLACE);
+      if (is_object($file)) {
+        drupal_set_message(t("File created successfully"), 'status');
+      }
+      else {
+        drupal_set_message(t("Error in file creation"), 'error');
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function node_to_json_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.node_to_json':
+      return t('
+        <h2>Node to json.</h2>
+        <h3>Descripción</h3>
+        <p>este modulo permite crear archivos json en base a los nodos</p>
+        <h3>Instrucciones</h3>
+        <p>tras actualizar o crear un nodo se creara un archivo json en la ruta definida en la interfaz de administracion(en construcion) siguiendo las reglas definidas en la misma</p>
+      ');
+  }
+}
+
+?>

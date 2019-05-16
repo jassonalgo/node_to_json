@@ -1,0 +1,12 @@
+node_to_json.admin:
+  title: 'node to json module settings'
+  description: 'admin page from node to json module'
+  parent: system.admin_config_development
+  route_name: node_to_json.form
+  weight: 100
+node_to_json.page:
+  title: 'node to json module page'
+  description: 'example of how to make an admin settings page link'
+  parent: system.admin_config_development
+  route_name: node_to_json.content
+  weight: 100

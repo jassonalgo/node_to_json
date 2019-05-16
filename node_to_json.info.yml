@@ -1,0 +1,6 @@
+name: Node to json
+description: Create a json file after insert/uṕdate nodes
+package: etce
+
+type: module
+core: 8.x
