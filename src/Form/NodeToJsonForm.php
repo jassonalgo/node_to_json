@@ -12,6 +12,10 @@ class NodeToJsonForm extends ConfigFormBase {
 	}
 
 	public function buildForm(array $form, FormStateInterface $form_state) {
+		//get content type list
+		$list = node_type_get_types();
+		dpm(array_keys($list));
+
 		// Form constructor.
 		$form = parent::buildForm($form, $form_state);
 		// Default settings.
@@ -21,7 +25,7 @@ class NodeToJsonForm extends ConfigFormBase {
 			'#type' => 'textfield',
 			'#title' => $this->t('Location path:'),
 			'#default_value' => $config->get('node_to_json.path'),
-			'#description' => $this->t('the location were the files are be loacted'),
+			'#description' => $this->t('the location were the files are be loacted not be abosolute'),
 		);
 
 		return $form;
@@ -31,7 +35,13 @@ class NodeToJsonForm extends ConfigFormBase {
 	 * {@inheritdoc}
 	 */
 	public function validateForm(array &$form, FormStateInterface $form_state) {
-
+		//validate the directory
+		$path = "public://" . $form_state->getValue('path');
+		if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
+			drupal_set_message(t("the folder is ok"), 'status');
+		} else {
+			drupal_set_message(t("something is bad"), 'status');
+		}
 	}
 
 	/**

@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Installation functions for node to json module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function node_to_json_install() {
+  $path = "public://json";
+  file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+}

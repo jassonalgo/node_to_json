@@ -28,7 +28,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
       }
       $data['body'] = $entity->get('body')->value;
       //$entity->setTitle($entity->get('field_date')->value);
-      $file = file_save_data(json_encode($data), "public://json/".$title.".json", FILE_EXISTS_REPLACE);
+      $file = file_save_data(json_encode($data), "public://".$path."/".$title.".json", FILE_EXISTS_REPLACE);
       if (is_object($file)) {
         drupal_set_message(t("File created successfully"), 'status');
       }

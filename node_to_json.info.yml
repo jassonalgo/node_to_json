@@ -4,3 +4,5 @@ package: etce
 
 type: module
 core: 8.x
+
+configure: node_to_json.settings
