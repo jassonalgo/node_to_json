@@ -9,6 +9,10 @@
  * Implements hook_install().
  */
 function node_to_json_install() {
+   // Set default values for config which require dynamic values.
+  //\Drupal::configFactory()->getEditable('modulename.settings')
+  //  ->set('default_from_address', \Drupal::config('system.site')->get('mail'))
+  //  ->save();
   $path = "public://json";
   file_prepare_directory($path, FILE_CREATE_DIRECTORY);
 }

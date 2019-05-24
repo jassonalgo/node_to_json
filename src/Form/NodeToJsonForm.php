@@ -14,6 +14,33 @@ class NodeToJsonForm extends ConfigFormBase {
 	public function buildForm(array $form, FormStateInterface $form_state) {
 		//get content type list
 		$list = node_type_get_types();
+		$listFields = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', 'static_pages');
+
+		$node_field_map = $field_map['node'];
+		$node_fields = array_keys($node_field_map['node']);
+		$field_map = \Drupal::entityManager()->getFieldMap();
+		$node_field_map = $field_map['node'];
+		$node_fields = array_keys($node_field_map['static_pages']);
+		$node_article_fields = \Drupal::entityManager()->getFieldDefinitions('node', 'article');
+		//dpm($node_article_fields);
+		//$node = Node::create(['type' => 'static_pages']);
+		//dpm($node->getFieldDefinitions());
+		//
+		if (isset($definitions[$field_name])) {
+			$options_array = $definitions[$field_name]->getSetting('allowed_values');
+		}
+		$entity_type_id = 'node';
+		$bundle = 'article';
+		foreach (\Drupal::entityManager()->getFieldDefinitions($entity_type_id, $bundle) as $field_name => $field_definition) {
+			dpm(get_class_methods($field_definition));
+			if (!empty($field_definition->getTargetBundle())) {
+				$bundleFields[$entity_type_id][$field_name]['type'] = $field_definition->getType();
+				$bundleFields[$entity_type_id][$field_name]['label'] = $field_definition->getLabel();
+			}
+		}
+
+		//dpm($ref_fields);
+		//dpm($listFields);
 		dpm(array_keys($list));
 
 		// Form constructor.
