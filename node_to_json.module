@@ -28,6 +28,10 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
       }
       $data['body'] = $entity->get('body')->value;
       //$output = $this->serializer->serialize($entity, 'json');
+      //para obtener varios valores del state
+      //$pairs = \Drupal::state()->getMultiple($keys);
+      //setear multiples valroes
+      //\Drupal::state()->setMultiple($keyvalues);
       //$entity->setTitle($entity->get('field_date')->value);
       $file = file_save_data(json_encode($data), "public://".$path."/".$title.".json", FILE_EXISTS_REPLACE);
       if (is_object($file)) {
