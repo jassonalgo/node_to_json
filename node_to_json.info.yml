@@ -1,6 +1,6 @@
 name: Node to json
 description: Create a json file after insert/uṕdate nodes
-package: etce
+package: etce club vivamos
 
 type: module
 core: 8.x
