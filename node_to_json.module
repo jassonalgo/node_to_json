@@ -3,6 +3,7 @@
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\image\Entity\ImageStyle;
 
 /**
  * Implements hook_entity_presave().
@@ -13,6 +14,9 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   $path = $default_config->get('node_to_json.path');
   $data = [];
   $imageJson = [];
+  //get preset images
+  $imageStyles = ImageStyle::loadMultiple();
+  $presetName = [];
   //the type of entity is validated
   switch ($entity->bundle()) {
     // Here you modify only your day content type
@@ -40,7 +44,15 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
         //validate if data have fid
         if(is_array($imageData) && array_key_exists('target_id', $imageData[0])){
           // get file data
+          $imageJson['preset'] = [];
           $file = \Drupal\file\Entity\File::load( $imageData[0]['target_id']);
+          //go over preset image array
+          foreach ($imageStyles as $key => $value) {
+            $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($value->getName());
+            //get url image whit preset
+            $url = $style->buildUrl($file->getFileUri());
+            $imageJson['preset'][$value->getName()] = $url;
+          }
           //get local path
           $imageJson['localPath'] =  $file->getFileUri();
           $imageJson['absolutepath'] = file_create_url($file->getFileUri());
