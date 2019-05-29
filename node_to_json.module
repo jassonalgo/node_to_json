@@ -7,6 +7,7 @@ use Drupal\image\Entity\ImageStyle;
 
 /**
  * Implements hook_entity_presave().
+ * generates a json file after saving or updating a node
  */
 function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
   //get the module config
