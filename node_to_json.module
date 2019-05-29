@@ -3,16 +3,30 @@
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\image\Entity\ImageStyle;
 
 /**
  * Implements hook_entity_presave().
+ * generates a json file after saving or updating a node
  */
 function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  /*
+  // Get the current user
+  $user = \Drupal::currentUser();
+  // Check for permission
+  $perm = $user->hasPermission('create json file from node');
+  if($perm){
+  }else{
+  }
+  */
   //get the module config
   $default_config = \Drupal::config('node_to_json.settings');
   $path = $default_config->get('node_to_json.path');
   $data = [];
   $imageJson = [];
+  //get preset images
+  $imageStyles = ImageStyle::loadMultiple();
+  $presetName = [];
   //the type of entity is validated
   switch ($entity->bundle()) {
     // Here you modify only your day content type
@@ -40,7 +54,15 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
         //validate if data have fid
         if(is_array($imageData) && array_key_exists('target_id', $imageData[0])){
           // get file data
+          $imageJson['preset'] = [];
           $file = \Drupal\file\Entity\File::load( $imageData[0]['target_id']);
+          //go over preset image array
+          foreach ($imageStyles as $key => $value) {
+            $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($value->getName());
+            //get url image whit preset
+            $url = $style->buildUrl($file->getFileUri());
+            $imageJson['preset'][$value->getName()] = $url;
+          }
           //get local path
           $imageJson['localPath'] =  $file->getFileUri();
           $imageJson['absolutepath'] = file_create_url($file->getFileUri());
@@ -49,14 +71,21 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
 
       $data['body'] = $entity->get('body')->value;
       $data['image'] = $imageJson;
-      //create file
-      $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), "public://".$path."/".$title.".json", FILE_EXISTS_REPLACE);
-      if (is_object($file)) {
-        drupal_set_message(t("File created successfully"), 'status');
+      $path = "public://".$path;
+      //validate if folder exists and is writable
+      if(file_prepare_directory($path, FILE_MODIFY_PERMISSIONS)){
+        //create file
+        $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $path."/".$title.".json", FILE_EXISTS_REPLACE);
+        if (is_object($file)) {
+          drupal_set_message(t("Json file created successfully"), 'status');
+        }
+        else {
+          drupal_set_message(t("Error in file creation"), 'error');
+        }
+      }else{
+        drupal_set_message(t("the folder dont have the rigth permissions"), 'error');
       }
-      else {
-        drupal_set_message(t("Error in file creation"), 'error');
-      }
+
       break;
   }
 }

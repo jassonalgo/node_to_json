@@ -4,4 +4,4 @@ node_to_json.form:
     _form: 'Drupal\node_to_json\Form\NodeToJsonForm'
     _title: 'Node to json settings'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'create json file from node'

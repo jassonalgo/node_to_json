@@ -7,8 +7,13 @@
 
 /**
  * Implements hook_install().
+ * Creates default folder for json files.
  */
 function node_to_json_install() {
   $path = "public://json";
-  file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+  if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)){
+    drupal_set_message(t("Default folder was be created"), 'status');
+  }else{
+    drupal_set_message(t("it was not possible to create the directory"), 'error');
+  }
 }
