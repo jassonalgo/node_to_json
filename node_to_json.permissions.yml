@@ -1,0 +1,4 @@
+#Define the administer permission for the robot config entity.
+'create json file from node':
+  title: 'Create json'
+  description: Create json file after create or update nodes.
