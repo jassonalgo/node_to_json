@@ -25,7 +25,8 @@ class NodeToJsonForm extends ConfigFormBase {
 			'#type' => 'textfield',
 			'#title' => $this->t('Location path:'),
 			'#default_value' => $config->get('node_to_json.path'),
-			'#description' => $this->t('the location were the files are be loacted not be abosolute'),
+			'#description' => $this->t('there is a problem it is necessary to review the permits'),
+			'#required' => TRUE,
 		);
 
 		return $form;
@@ -38,10 +39,11 @@ class NodeToJsonForm extends ConfigFormBase {
 		//validate the directory
 		$path = "public://" . $form_state->getValue('path');
 		if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
-			drupal_set_message(t("the folder is ok"), 'status');
+			drupal_set_message(t("The folder is valid"), 'status');
 		} else {
-			drupal_set_message(t("something is bad"), 'status');
+			$form_state->setErrorByName('path', $this->t(''));
 		}
+
 	}
 
 	/**
