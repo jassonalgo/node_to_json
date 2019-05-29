@@ -61,14 +61,21 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
 
       $data['body'] = $entity->get('body')->value;
       $data['image'] = $imageJson;
-      //create file
-      $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), "public://".$path."/".$title.".json", FILE_EXISTS_REPLACE);
-      if (is_object($file)) {
-        drupal_set_message(t("File created successfully"), 'status');
+      $path = "public://".$path;
+      //validate if folder exists and is writable
+      if(file_prepare_directory($path, FILE_MODIFY_PERMISSIONS)){
+        //create file
+        $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $path."/".$title.".json", FILE_EXISTS_REPLACE);
+        if (is_object($file)) {
+          drupal_set_message(t("Json file created successfully"), 'status');
+        }
+        else {
+          drupal_set_message(t("Error in file creation"), 'error');
+        }
+      }else{
+        drupal_set_message(t("the folder dont have the rigth permissions"), 'error');
       }
-      else {
-        drupal_set_message(t("Error in file creation"), 'error');
-      }
+
       break;
   }
 }
