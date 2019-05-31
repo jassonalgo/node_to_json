@@ -1,4 +1,6 @@
 node_to_json:
   path: 'json'
   content:
-    - article
+    - article:
+        - 'title'
+        - 'body'

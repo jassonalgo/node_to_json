@@ -24,6 +24,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   $path = $default_config->get('node_to_json.path');
   $data = [];
   $imageJson = [];
+
   //get preset images
   $imageStyles = ImageStyle::loadMultiple();
   $presetName = [];

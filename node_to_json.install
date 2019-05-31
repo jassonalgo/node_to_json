@@ -13,7 +13,7 @@ function node_to_json_install() {
   //get the module config
   $default_config = \Drupal::config('node_to_json.settings');
   $path = $default_config->get('node_to_json.path');
-  dpm("en la prueba de instalacion " . $path);
+  //set filed to set in json by default content type
   $path = "public://" . $path;
   if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)){
     drupal_set_message(t("Default folder was be created"), 'status');
