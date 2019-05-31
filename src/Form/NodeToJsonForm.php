@@ -2,7 +2,7 @@
 
 namespace Drupal\node_to_json\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -10,9 +10,9 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * This class create a admin form, to NodeToJson module.
  *
- * @see \Drupal\Core\Form\ConfigFormBase
+ * @see \Drupal\Core\Form\FormBase
  */
-class NodeToJsonForm extends ConfigFormBase {
+class NodeToJsonForm extends FormBase {
 
 	/**
 	 * Getter method for Form ID.
@@ -46,38 +46,46 @@ class NodeToJsonForm extends ConfigFormBase {
 		//get config
 		$config = $this->config('node_to_json.settings');
 		$avalibleContentTypes = $config->get('node_to_json.fields');
+		$configContentTypes = $config->get('node_to_json.content');
 		//get content type list
 		$list = $this->contentTypeFields();
-		dpm($list);
 		//print the content types in form
 		foreach ($list as $key => $value) {
+			$defaultValue = 0;
+			//verify if content type is checked for create json
+			if (array_key_exists($key, $configContentTypes)) {
+				$defaultValue = 1;
+			}
 			$form[$key] = array(
 				'#type' => 'checkbox',
 				'#title' => $value['label'],
+				'#default_value' => $defaultValue,
 			);
+			//fieldset whit field of the contetn type
 			$form[$key . '_fieldset'] = [
 				'#type' => 'fieldset',
 				'#title' => $this->t(
 					'fields of @content', array('@content' => $value['label'])
 				),
 			];
-			$entity_type_id = 'node';
+			//go over arrays whit fields of content type
 			foreach ($value['fields'] as $key2 => $value2) {
-				dpm($key2);
-				dpm($value2);
 				if (in_array($value2['type'], $avalibleContentTypes)) {
-					$form[$key . '_fieldset'][$key2] = array(
+					$defaultValue = 0;
+					//verify if field type is checked for add in  create json
+					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key])) {
+						$defaultValue = 1;
+					}
+					//print avalible fields
+					$form[$key . '_fieldset']['name'][$key . '-_-' . $key2] = array(
 						'#type' => 'checkbox',
 						'#title' => $value2['label'],
+						'#default_value' => $defaultValue,
 					);
 				}
-
 			}
 		}
-		// Form constructor.
-		$form = parent::buildForm($form, $form_state);
-		// Default settings.
-		$config = $this->config('node_to_json.settings');
+
 		// Page title field.
 		$form['path'] = array(
 			'#type' => 'textfield',
@@ -86,6 +94,17 @@ class NodeToJsonForm extends ConfigFormBase {
 			'#description' => $this->t('there is a problem it is necessary to review the permits'),
 			'#required' => TRUE,
 		);
+
+		// to the form. This is not required, but is convention.
+		$form['actions'] = [
+			'#type' => 'actions',
+		];
+
+		// Add a submit button that handles the submission of the form.
+		$form['actions']['submit'] = [
+			'#type' => 'submit',
+			'#value' => $this->t('Submit'),
+		];
 
 		return $form;
 	}
@@ -107,9 +126,9 @@ class NodeToJsonForm extends ConfigFormBase {
 		if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
 			drupal_set_message(t("The folder is valid"), 'status');
 		} else {
+			//inform the problem whit permissions
 			$form_state->setErrorByName('path', $this->t(''));
 		}
-
 	}
 
 	/**
@@ -123,11 +142,28 @@ class NodeToJsonForm extends ConfigFormBase {
 	 *   Object describing the current state of the form.
 	 */
 	public function submitForm(array &$form, FormStateInterface $form_state) {
-		//get config module
-		$config = $this->config('node_to_json.settings');
+		$configData = [];
+		//get values of form
+		$valuesForm = $form_state->getValues();
+		//dpm(array_keys($valuesForm));
+		foreach ($valuesForm as $key => $value) {
+			//search content type checkbox and files
+			if (is_int($value) && $value == 1) {
+				$fieldName = explode("-_-", $key);
+				if (count($fieldName) == 1) {
+					//get content type
+					$configData[$fieldName[0]] = [];
+				} elseif (count($fieldName) == 2 && array_key_exists($fieldName[0], $configData)) {
+					//get field of content type
+					$configData[$fieldName[0]][] = $fieldName[1];
+				}
+			}
+		}
+		//get and set config module
+		$config = \Drupal::service('config.factory')->getEditable('node_to_json.settings');
 		$config->set('node_to_json.path', $form_state->getValue('path'));
+		$config->set('node_to_json.content', $configData);
 		$config->save();
-		return parent::submitForm($form, $form_state);
 	}
 
 	/**
@@ -145,12 +181,14 @@ class NodeToJsonForm extends ConfigFormBase {
 
 	public function contentTypeFields() {
 		$data = [];
+		//get list of content types
 		$list = node_type_get_types();
 		$entity_type_id = 'node';
 		foreach ($list as $key => $value) {
 			$data[$key] = [];
 			$data[$key]['label'] = $value->label();
 			$data[$key]['fields'] = [];
+			//get fields of content type
 			foreach (\Drupal::entityManager()->getFieldDefinitions($entity_type_id, $key) as $field_name => $field_definition) {
 				if (!empty($field_definition->getTargetBundle())) {
 					$data[$key]['fields'][$field_name]['type'] = $field_definition->getType();
@@ -158,7 +196,6 @@ class NodeToJsonForm extends ConfigFormBase {
 				}
 			}
 		}
-
 		return $data;
 	}
 }
