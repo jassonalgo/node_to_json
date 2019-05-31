@@ -43,10 +43,37 @@ class NodeToJsonForm extends ConfigFormBase {
 	 *   The render array defining the elements of the form.
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state) {
+		//get config
+		$config = $this->config('node_to_json.settings');
+		$avalibleContentTypes = $config->get('node_to_json.fields');
 		//get content type list
-		$list = node_type_get_types();
-		dpm(array_keys($list));
+		$list = $this->contentTypeFields();
+		dpm($list);
+		//print the content types in form
+		foreach ($list as $key => $value) {
+			$form[$key] = array(
+				'#type' => 'checkbox',
+				'#title' => $value['label'],
+			);
+			$form[$key . '_fieldset'] = [
+				'#type' => 'fieldset',
+				'#title' => $this->t(
+					'fields of @content', array('@content' => $value['label'])
+				),
+			];
+			$entity_type_id = 'node';
+			foreach ($value['fields'] as $key2 => $value2) {
+				dpm($key2);
+				dpm($value2);
+				if (in_array($value2['type'], $avalibleContentTypes)) {
+					$form[$key . '_fieldset'][$key2] = array(
+						'#type' => 'checkbox',
+						'#title' => $value2['label'],
+					);
+				}
 
+			}
+		}
 		// Form constructor.
 		$form = parent::buildForm($form, $form_state);
 		// Default settings.
@@ -114,6 +141,25 @@ class NodeToJsonForm extends ConfigFormBase {
 		return [
 			'node_to_json.settings',
 		];
+	}
+
+	public function contentTypeFields() {
+		$data = [];
+		$list = node_type_get_types();
+		$entity_type_id = 'node';
+		foreach ($list as $key => $value) {
+			$data[$key] = [];
+			$data[$key]['label'] = $value->label();
+			$data[$key]['fields'] = [];
+			foreach (\Drupal::entityManager()->getFieldDefinitions($entity_type_id, $key) as $field_name => $field_definition) {
+				if (!empty($field_definition->getTargetBundle())) {
+					$data[$key]['fields'][$field_name]['type'] = $field_definition->getType();
+					$data[$key]['fields'][$field_name]['label'] = $field_definition->getLabel();
+				}
+			}
+		}
+
+		return $data;
 	}
 }
 ?>

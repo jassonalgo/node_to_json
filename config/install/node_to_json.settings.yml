@@ -1,5 +1,9 @@
 node_to_json:
   path: 'json'
+  fields:
+    - text_with_summary
+    - image
+    - string
   content:
     - article:
         - 'title'
