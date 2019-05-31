@@ -10,10 +10,23 @@
  * Creates default folder for json files.
  */
 function node_to_json_install() {
-  $path = "public://json";
+  //get the module config
+  $default_config = \Drupal::config('node_to_json.settings');
+  $path = $default_config->get('node_to_json.path');
+  dpm("en la prueba de instalacion " . $path);
+  $path = "public://" . $path;
   if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)){
     drupal_set_message(t("Default folder was be created"), 'status');
   }else{
     drupal_set_message(t("it was not possible to create the directory"), 'error');
   }
+}
+
+
+/**
+ * Implements hook_uninstall().
+ *
+ */
+function node_to_json_uninstall() {
+
 }
