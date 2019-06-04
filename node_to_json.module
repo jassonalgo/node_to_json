@@ -39,7 +39,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
         $title = $entity->getTitle();
       }
       //validate if file image exist
-      if($entity->hasField('field_static_image')){
+      if($entity->hasField('field_static_image') && !empty($entity->get('field_static_image')->getValue())){
         $imageData = $entity->get('field_static_image')->getValue();
         //validate image metada
         if(is_array($imageData) && array_key_exists('title', $imageData[0]) && !empty($imageData[0]['title'])){
@@ -66,12 +66,15 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
           }
           //get local path
           $imageJson['localPath'] =  $file->getFileUri();
-          $imageJson['absolutepath'] = file_create_url($file->getFileUri());
+          $imageJson['absolutePath'] = file_create_url($file->getFileUri());
         }else{}
       }
-
+      $data['title'] = $entity->getTitle();
       $data['body'] = $entity->get('body')->value;
-      $data['image'] = $imageJson;
+      //validate if image is not empty
+      if(!empty($imageJson)){
+        $data['image'] = $imageJson;
+      }
       $path = "public://".$path;
       //validate if folder exists and is writable
       if(file_prepare_directory($path, FILE_MODIFY_PERMISSIONS)){
