@@ -1,7 +1,6 @@
 <?php
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\image\Entity\ImageStyle;
 
@@ -11,17 +10,18 @@ use Drupal\image\Entity\ImageStyle;
  */
 function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
   /*
-  // Get the current user
-  $user = \Drupal::currentUser();
-  // Check for permission
-  $perm = $user->hasPermission('create json file from node');
-  if($perm){
-  }else{
-  }
+      // Get the current user
+      $user = \Drupal::currentUser();
+      // Check for permission
+      $perm = $user->hasPermission('create json file from node');
+      if($perm){
+      }else{
+      }
   */
   //get the module config
   $default_config = \Drupal::config('node_to_json.settings');
   $path = $default_config->get('node_to_json.path');
+  $contentType = $default_config->get('node_to_json.content');
   $data = [];
   $data['data'] = [];
   $imageJson = [];
@@ -29,73 +29,98 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   //get preset images
   $imageStyles = ImageStyle::loadMultiple();
   $presetName = [];
+
   //the type of entity is validated
-  switch ($entity->bundle()) {
-    // Here you modify only your day content type
-    case 'static_pages':
-      //get data
-      if($entity->hasField('field_json_file_name')){
-        $title = $entity->get('field_json_file_name')->value;
-      }else{
-        $title = $entity->getTitle();
-      }
+  if (array_key_exists($entity->bundle(), $contentType)) {
+    //get common fields
+    $title = $entity->getTitle();
+    $data['data']['title'] = $title;
+    //$data['data']['body'] = $entity->get('body')->value;
+    $data['data']['created'] = $entity->getCreatedTime();
+    $data['data']['updated'] = $entity->getChangedTime();
+    $data['data']['lastModifiedBy'] = $entity->getRevisionAuthor()->getUsername();
 
-      //validate if file image exist
-      if($entity->hasField('field_static_image') && !empty($entity->get('field_static_image')->getValue())){
-        $imageData = $entity->get('field_static_image')->getValue();
-        //validate image metada
-        if(is_array($imageData) && array_key_exists('title', $imageData[0]) && !empty($imageData[0]['title'])){
-          $imageJson['title'] = $imageData[0]['title'];
-        }else{
-          $imageJson['title'] = $entity->getTitle();
-        }
-        if(is_array($imageData) && array_key_exists('alt', $imageData[0]) && !empty($imageData[0]['alt'])){
-          $imageJson['alt'] = $imageData[0]['alt'];
-        }else{
-          $imageJson['alt'] = $entity->getTitle();
-        }
-        //validate if data have fid
-        if(is_array($imageData) && array_key_exists('target_id', $imageData[0])){
-          // get file data
-          $imageJson['preset'] = [];
-          $file = \Drupal\file\Entity\File::load( $imageData[0]['target_id']);
-          //go over preset image array
-          foreach ($imageStyles as $key => $value) {
-            $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($value->getName());
-            //get url image whit preset
-            $url = $style->buildUrl($file->getFileUri());
-            $imageJson['preset'][$value->getName()] = $url;
+    //get particular fields
+    foreach ($contentType[$entity->bundle()] as $keyField => $nameField) {
+      //get field type
+      $fieldType = $entity->get($nameField)->getFieldDefinition()->getType();
+      switch ($fieldType) {
+      case 'text_with_summary':
+        $valueField = $entity->get($nameField)->getValue();
+        $data['data'][$nameField] = $valueField[0]['value'];
+        break;
+      case 'string':
+        $valueField = $entity->get($nameField)->getValue();
+        $data['data'][$nameField] = $valueField[0]['value'];
+        break;
+      case 'image':
+        //validate if file image exist
+        if ($entity->hasField($nameField) && !empty($entity->get($nameField)->getValue())) {
+          $imageData = $entity->get($nameField)->getValue();
+          //validate image metada
+          if (is_array($imageData) && array_key_exists('title', $imageData[0]) && !empty($imageData[0]['title'])) {
+            $imageJson['title'] = $imageData[0]['title'];
+          } else {
+            $imageJson['title'] = $title;
           }
-          $imageJson['absolutePath'] = file_create_url($file->getFileUri());
-        }else{}
-      }
-      $data['data']['title'] = $entity->getTitle();
-      $data['data']['body'] = $entity->get('body')->value;
-      $data['data']['created'] = $entity->getCreatedTime();
-      $data['data']['updated'] = $entity->getChangedTime();
-      $data['data']['lastModifiedBy'] = $entity->getRevisionAuthor()->getUsername();
-      //validate if image is not empty
-      if(!empty($imageJson)){
-        $data['data']['image'] = [];
-        $data['data']['image'] = $imageJson;
-      }
-      $path = "public://".$path;
-      //validate if folder exists and is writable
-      if(file_prepare_directory($path, FILE_MODIFY_PERMISSIONS)){
-        //create file
-        $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $path."/".$title.".json", FILE_EXISTS_REPLACE);
-        if (is_object($file)) {
-          drupal_set_message(t("Json file created successfully"), 'status');
+          if (is_array($imageData) && array_key_exists('alt', $imageData[0]) && !empty($imageData[0]['alt'])) {
+            $imageJson['alt'] = $imageData[0]['alt'];
+          } else {
+            $imageJson['alt'] = $title;
+          }
+          //validate if data have fid
+          if (is_array($imageData) && array_key_exists('target_id', $imageData[0])) {
+            // get file data
+            $imageJson['preset'] = [];
+            $file = \Drupal\file\Entity\File::load($imageData[0]['target_id']);
+            //go over preset image array
+            foreach ($imageStyles as $key => $value) {
+              $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($value->getName());
+              //get url image whit preset
+              $url = $style->buildUrl($file->getFileUri());
+              $imageJson['preset'][$value->getName()] = $url;
+            }
+            $imageJson['absolutePath'] = file_create_url($file->getFileUri());
+          } else {}
         }
-        else {
-          drupal_set_message(t("Error in file creation"), 'error');
+        //validate if image is not empty
+        if (!empty($imageJson)) {
+          $data['data']['image'] = [];
+          $data['data']['image'] = $imageJson;
         }
-      }else{
-        drupal_set_message(t("the folder dont have the rigth permissions"), 'error');
+        break;
       }
+    }
 
-      break;
+    //get data title
+    if ($entity->hasField('field_json_file_name')) {
+      $title = $entity->get('field_json_file_name')->value;
+    } else {
+      $title = $entity->getTitle();
+    }
+
+    $path = "public://" . $path;
+    //validate if folder exists and is writable
+    if (file_prepare_directory($path, FILE_MODIFY_PERMISSIONS)) {
+      //create file
+      $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $path . "/" . $title . ".json", FILE_EXISTS_REPLACE);
+      if (is_object($file)) {
+        drupal_set_message(t("Json file created successfully"), 'status');
+      } else {
+        drupal_set_message(t("Error in file creation"), 'error');
+      }
+    } else {
+      drupal_set_message(t("the folder dont have the rigth permissions"), 'error');
+    }
   }
+  /*
+
+      switch ($entity->bundle()) {
+        // Here you modify only your day content type
+        case 'static_pages':
+
+          break;
+  */
 }
 
 /**
@@ -103,8 +128,8 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
  */
 function node_to_json_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
-    case 'help.page.node_to_json':
-      return t('
+  case 'help.page.node_to_json':
+    return t('
         <h2>Node to json.</h2>
         <h3>Description</h3>
         <p>This module allows you to create json files based on the nodes</p>
