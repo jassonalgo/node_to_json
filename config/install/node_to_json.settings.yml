@@ -1,16 +1,13 @@
 node_to_json:
   path: 'json'
-  file_name:
-    field:
-
   fields_avalible:
     - text_with_summary
     - image
     - string
   content:
-      article:
-        fields:
-          - 'title'
-          - 'body'
-        title:
-          property: 'nid'
+    article:
+      fields:
+        - 'title'
+        - 'body'
+      file_name: 'nid'
+

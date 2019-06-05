@@ -22,6 +22,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   $default_config = \Drupal::config('node_to_json.settings');
   $path = $default_config->get('node_to_json.path');
   $contentType = $default_config->get('node_to_json.content');
+
   $data = [];
   $data['data'] = [];
   $imageJson = [];
@@ -33,6 +34,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   //the type of entity is validated
   if (array_key_exists($entity->bundle(), $contentType)) {
     //get common fields
+    //dpm(($entity->id()));
     $title = $entity->getTitle();
     $data['data']['title'] = $title;
     //$data['data']['body'] = $entity->get('body')->value;
@@ -40,6 +42,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
     $data['data']['updated'] = $entity->getChangedTime();
     $data['data']['lastModifiedBy'] = $entity->getRevisionAuthor()->getUsername();
 
+    $fileNameType = $contentType[$entity->bundle()]['file_name'];
     //get particular fields
     foreach ($contentType[$entity->bundle()]['fields'] as $keyField => $nameField) {
       //get field type
@@ -92,20 +95,22 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
       }
     }
 
-    //get data title
-    if ($entity->hasField('field_json_file_name')) {
-      $title = $entity->get('field_json_file_name')->value;
-    } else {
-      $title = $entity->getTitle();
-    }
-
     $path = "public://" . $path;
+    switch ($fileNameType) {
+      case 'nid':
+        $fileName = $entity->id();
+        break;
+      case 'title':
+        $fileName = $title;
+        break;
+    }
+    $fullPath = $path . "/" .$fileName . ".json";
     //validate if folder exists and is writable
     if (file_prepare_directory($path, FILE_MODIFY_PERMISSIONS)) {
       //create file
-      $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $path . "/" . $title . ".json", FILE_EXISTS_REPLACE);
+      $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $fullPath, FILE_EXISTS_REPLACE);
       if (is_object($file)) {
-        drupal_set_message(t("Json file created successfully"), 'status');
+        drupal_set_message(t("Json @path file created successfully", array('@path' => $fullPath )), 'status');
       } else {
         drupal_set_message(t("Error in file creation"), 'error');
       }
