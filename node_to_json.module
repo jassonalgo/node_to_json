@@ -41,7 +41,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
     $data['data']['lastModifiedBy'] = $entity->getRevisionAuthor()->getUsername();
 
     //get particular fields
-    foreach ($contentType[$entity->bundle()] as $keyField => $nameField) {
+    foreach ($contentType[$entity->bundle()]['fields'] as $keyField => $nameField) {
       //get field type
       $fieldType = $entity->get($nameField)->getFieldDefinition()->getType();
       switch ($fieldType) {

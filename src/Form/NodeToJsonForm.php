@@ -45,10 +45,21 @@ class NodeToJsonForm extends FormBase {
 	public function buildForm(array $form, FormStateInterface $form_state) {
 		//get config
 		$config = $this->config('node_to_json.settings');
-		$avalibleContentTypes = $config->get('node_to_json.fields');
+		$avalibleContentTypes = $config->get('node_to_json.fields_avalible');
 		$configContentTypes = $config->get('node_to_json.content');
 		//get content type list
 		$list = $this->contentTypeFields();
+		$form['file-name'] = [
+			'#type' => 'select',
+			'#title' => $this->t('Chose whoe determinate the name of the file'),
+			'#options' => [
+				'nid' => $this->t('Node id'),
+				'title' => $this->t('Node title'),
+				'custom' => $this->t('Custom string field'),
+			],
+			'#empty_option' => $this->t('-select-'),
+			'#description' => $this->t('Select, #type = select'),
+		];
 		$form['list_content_type'] = [
 			'#type' => 'item',
 			'#prefix' => '<div class="bold" >',
@@ -81,7 +92,12 @@ class NodeToJsonForm extends FormBase {
 				if (in_array($value2['type'], $avalibleContentTypes)) {
 					$defaultValue = 0;
 					//verify if field type is checked for add in  create json
-					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key])) {
+					/*dpm($key);
+					dpm($configContentTypes);
+					dpm($key2);
+					dpm($configContentTypes[$key]);
+					dpm("-----");*/
+					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key]['fields'])) {
 						$defaultValue = 1;
 					}
 					//print avalible fields
@@ -154,20 +170,21 @@ class NodeToJsonForm extends FormBase {
 		$configData = [];
 		//get values of form
 		$valuesForm = $form_state->getValues();
-		//dpm(array_keys($valuesForm));
+		dpm(array_keys($valuesForm));
 		foreach ($valuesForm as $key => $value) {
 			//search content type checkbox and files
 			if (is_int($value) && $value == 1) {
 				$fieldName = explode("-_-", $key);
 				if (count($fieldName) == 1) {
 					//get content type
-					$configData[$fieldName[0]] = [];
+					$configData[$fieldName[0]]['fields'] = [];
 				} elseif (count($fieldName) == 2 && array_key_exists($fieldName[0], $configData)) {
 					//get field of content type
-					$configData[$fieldName[0]][] = $fieldName[1];
+					$configData[$fieldName[0]]['fields'][] = $fieldName[1];
 				}
 			}
 		}
+		dpm($configData);
 		//get and set config module
 		$config = \Drupal::service('config.factory')->getEditable('node_to_json.settings');
 		$config->set('node_to_json.path', $form_state->getValue('path'));
