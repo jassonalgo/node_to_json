@@ -5,6 +5,6 @@ node_to_json:
     - image
     - string
   content:
-    - article:
+      article:
         - 'title'
         - 'body'
