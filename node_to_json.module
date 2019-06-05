@@ -134,7 +134,11 @@ function node_to_json_help($route_name, RouteMatchInterface $route_match) {
         <h3>Description</h3>
         <p>This module allows you to create json files based on the nodes</p>
         <h3>Instructions</h3>
-        <pafter updating or creating a node, a json file will be created in the path defined in the administration interface (in construction) following the rules defined in it</p>
+        <p>After saving or updating a content, a json will be created according to these rules (defined in the module\'s administrative menu)</p>
+        <ul>
+          <li>the content is valid to generate json</li>
+          <li>only the specified fields are exported in the json</li>
+        </ul>
       ');
   }
 }

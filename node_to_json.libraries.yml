@@ -1,0 +1,10 @@
+# A simple script using jquery ui accordion.
+node_to_json:
+  version: 1.x
+  css:
+    state:
+      css/general.css: {}
+  js:
+    js/admin_form.js: {}
+  dependencies:
+    - core/jquery

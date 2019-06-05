@@ -49,6 +49,12 @@ class NodeToJsonForm extends FormBase {
 		$configContentTypes = $config->get('node_to_json.content');
 		//get content type list
 		$list = $this->contentTypeFields();
+		$form['list_content_type'] = [
+			'#type' => 'item',
+			'#prefix' => '<div class="bold" >',
+			'#suffix' => '</div>',
+			'#markup' => $this->t('List of the content types.'),
+		];
 		//print the content types in form
 		foreach ($list as $key => $value) {
 			$defaultValue = 0;
@@ -59,11 +65,13 @@ class NodeToJsonForm extends FormBase {
 			$form[$key] = array(
 				'#type' => 'checkbox',
 				'#title' => $value['label'],
+				'#attributes' => array('class' => array('content-type', $key), 'data-content' => $key),
 				'#default_value' => $defaultValue,
 			);
 			//fieldset whit field of the contetn type
 			$form[$key . '_fieldset'] = [
 				'#type' => 'fieldset',
+				'#attributes' => array('class' => array('content-type-fields', 'hide', $key)),
 				'#title' => $this->t(
 					'fields of @content', array('@content' => $value['label'])
 				),
@@ -94,6 +102,7 @@ class NodeToJsonForm extends FormBase {
 			'#description' => $this->t('there is a problem it is necessary to review the permits'),
 			'#required' => TRUE,
 		);
+		$form['#attached']['library'][] = 'node_to_json/node_to_json';
 
 		// to the form. This is not required, but is convention.
 		$form['actions'] = [
