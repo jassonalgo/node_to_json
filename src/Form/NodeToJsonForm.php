@@ -97,7 +97,6 @@ class NodeToJsonForm extends FormBase {
 						],
 						'#default_value' => $defaultValueFileName,
 						'#empty_option' => $this->t('-select-'),
-						'#description' => $this->t('Select, #type = select'),
 					];
 					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key]['fields'])) {
 						$defaultValue = 1;
@@ -154,7 +153,7 @@ class NodeToJsonForm extends FormBase {
 			drupal_set_message(t("The folder is valid"), 'status');
 		} else {
 			//inform the problem whit permissions
-			$form_state->setErrorByName('path', $this->t(''));
+			$form_state->setErrorByName('path', $this->t('there is a problem it is necessary to review the permits'));
 		}
 	}
 

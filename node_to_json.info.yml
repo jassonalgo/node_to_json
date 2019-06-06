@@ -6,3 +6,6 @@ type: module
 core: 8.x
 
 configure: node_to_json.settings
+
+interface translation project: node_to_json
+interface translation server pattern: 'modules/custom/node_to_json/translations/%language.po'

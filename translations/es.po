@@ -1,0 +1,65 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: node to json\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "List of the content types."
+msgstr "Lista de contenidos disponibles"
+
+msgid "fields of @content"
+msgstr "Campos de @content"
+
+msgid "Chose whoe determinate the name of the file"
+msgstr "Define como determinar el nombre del archivo"
+
+msgid "Node id"
+msgstr "Id del nodo"
+
+msgid "Location path:"
+msgstr "Ruta de la carpeta"
+
+msgid "there is a problem it is necessary to review the permits"
+msgstr "Hay un problema es necesario revisar los permisos"
+
+msgid "The folder is valid"
+msgstr "La carpeta es valida"
+
+msgid "Default folder was be created"
+msgstr "Carpeta pro default creada"
+
+msgid "it was not possible to create the directory""
+msgstr "no fue posible crear el directorio"
+
+msgid "Json @path file created successfully"
+msgstr "Archivo json @path creado exitosamente"
+
+msgid "Error in file creation"
+msgstr "Error en creacion de archivo"
+
+msgid "the folder dont have the rigth permissions"
+msgstr "La carpeta no tiene los permisos correctos"
+
+msgid "<h2>Node to json.</h2>
+        <h3>Description</h3>
+        <p>This module allows you to create json files based on the nodes</p>
+        <h3>Instructions</h3>
+        <p>After saving or updating a content, a json will be created according to these rules (defined in the module\'s administrative menu)</p>
+        <ul>
+          <li>the content is valid to generate json</li>
+          <li>only the specified fields are exported in the json</li>
+        </ul>"
+
+msgid "<h2>Node to json.</h2>
+        <h3>Descripcion</h3>
+        <p>Este modulo te permite crear archivos json basados en nodos</p>
+        <h3>Instrucciones</h3>
+        <p>ADespues de crear po actualizar un contenido un json sera creado de acuerdo a las reglas(definidas en el menu administrativo del modulo)</p>
+        <ul>
+          <li>El contenido es valido para generar json</li>
+          <li>oSolo los campos especificados seran exportados en el json</li>
+        </ul>"
+
+
