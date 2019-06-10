@@ -2,7 +2,6 @@
 
 namespace Drupal\node_to_json\Controller;
 
-//use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\node\Entity\Node;
@@ -13,6 +12,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class NodeToJsonController extends ControllerBase {
 
+	/**
+	 * [getNodeRest description] function to return the field of node rest
+	 * @param  int    $nid [description] id of node
+	 * @return [type]      [description] response object whit json format
+	 * @author jeirod
+	 */
 	public function getNodeRest(int $nid) {
 		//get the module config
 		$default_config = \Drupal::config('node_to_json.settings');
@@ -21,25 +26,28 @@ class NodeToJsonController extends ControllerBase {
 
 		// Initialize the response array.
 		$response_array = [];
+		$data = [];
+		$data['data'] = [];
+		//load node by id
 		$entity = Node::load($nid);
 
 		//the type of entity is validated
 		if (array_key_exists($entity->bundle(), $contentType)) {
-			//get common fields
-			//dpm(($entity->id()));
 
+			//get common fields
 			$title = $entity->getTitle();
 			$data['data']['title'] = $title;
-			//$data['data']['body'] = $entity->get('body')->value;
 			$data['data']['created'] = $entity->getCreatedTime();
 			$data['data']['updated'] = $entity->getChangedTime();
 			$data['data']['lastModifiedBy'] = $entity->getRevisionAuthor()->getUsername();
 
+			//get hot to name the file
 			$fileNameType = $contentType[$entity->bundle()]['file_name'];
 			//get particular fields
 			foreach ($contentType[$entity->bundle()]['fields'] as $keyField => $nameField) {
 				//get field type
 				$fieldType = $entity->get($nameField)->getFieldDefinition()->getType();
+				//act according to the type of field
 				switch ($fieldType) {
 				case 'text_with_summary':
 					$valueField = $entity->get($nameField)->getValue();

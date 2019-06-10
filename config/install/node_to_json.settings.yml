@@ -7,7 +7,6 @@ node_to_json:
   content:
     article:
       fields:
-        - 'title'
         - 'body'
       file_name: 'nid'
 

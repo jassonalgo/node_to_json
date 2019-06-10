@@ -34,10 +34,8 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   //the type of entity is validated
   if (array_key_exists($entity->bundle(), $contentType)) {
     //get common fields
-    //dpm(($entity->id()));
     $title = $entity->getTitle();
     $data['data']['title'] = $title;
-    //$data['data']['body'] = $entity->get('body')->value;
     $data['data']['created'] = $entity->getCreatedTime();
     $data['data']['updated'] = $entity->getChangedTime();
     $data['data']['lastModifiedBy'] = $entity->getRevisionAuthor()->getUsername();
@@ -95,6 +93,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
       }
     }
 
+    //get and define the file name
     $path = "public://" . $path;
     switch ($fileNameType) {
       case 'nid':
@@ -120,14 +119,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
   }else{
 
   }
-  /*
 
-      switch ($entity->bundle()) {
-        // Here you modify only your day content type
-        case 'static_pages':
-
-          break;
-  */
 }
 
 /**
@@ -150,7 +142,11 @@ function node_to_json_help($route_name, RouteMatchInterface $route_match) {
   }
 }
 
-// This function expects the input to be UTF-8 encoded.
+/**
+ * [slugify ] This function expects the input to be UTF-8 encoded.
+ * @param  [string] $text [text to clean]
+ * @return [string] $text [cleaned text]
+ */
 function slugify($text)
 {
     // Swap out Non "Letters" with a -

@@ -85,18 +85,18 @@ class NodeToJsonForm extends FormBase {
 					if (array_key_exists('file_name', $configContentTypes[$key])) {
 						$defaultValueFileName = $configContentTypes[$key]['file_name'];
 					}
-					//verify if field type is checked for add in  create json
+
 					$form[$key . '_fieldset']['name']['node_to_json---' . $key . '---filename'] = [
 						'#type' => 'select',
 						'#title' => $this->t('Chose whoe determinate the name of the file'),
 						'#options' => [
 							'nid' => $this->t('Node id'),
 							'title' => $this->t('Node title'),
-							//'custom' => $this->t('Custom string field'),
 						],
 						'#default_value' => $defaultValueFileName,
 						'#empty_option' => $this->t('-select-'),
 					];
+					//verify if field type is checked for add in  create json
 					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key]['fields'])) {
 						$defaultValue = 1;
 					}
@@ -110,7 +110,7 @@ class NodeToJsonForm extends FormBase {
 			}
 		}
 
-		// Page title field.
+		// Path field.
 		$form['path'] = array(
 			'#type' => 'textfield',
 			'#title' => $this->t('Location path:'),
@@ -118,6 +118,7 @@ class NodeToJsonForm extends FormBase {
 			'#description' => $this->t('there is a problem it is necessary to review the permits'),
 			'#required' => TRUE,
 		);
+		//add js and css to form
 		$form['#attached']['library'][] = 'node_to_json/node_to_json';
 
 		// to the form. This is not required, but is convention.
@@ -192,7 +193,6 @@ class NodeToJsonForm extends FormBase {
 						}
 					}
 					//validate select for filename
-
 					if (array_key_exists($fieldName[1], $configData) && is_string($value) && strpos($key, 'filename')) {
 						switch ($value) {
 						case 'nid':
@@ -207,13 +207,6 @@ class NodeToJsonForm extends FormBase {
 
 					break;
 				}
-				/*if (count($fieldName) == 1) {
-						//get content type
-
-					} elseif (count($fieldName) == 2 && array_key_exists($fieldName[0], $configData)) {
-						//get field of content type
-						$configData[$fieldName[0]]['fields'][] = $fieldName[1];
-				*/
 			}
 		}
 
@@ -237,6 +230,11 @@ class NodeToJsonForm extends FormBase {
 		];
 	}
 
+	/**
+	 * [contentTypeFields] funtion that returns an array whit content type and fields
+	 * @return [data] array
+	 * @author jeirod
+	 */
 	public function contentTypeFields() {
 		$data = [];
 		//get list of content types
@@ -248,6 +246,7 @@ class NodeToJsonForm extends FormBase {
 			$data[$key]['fields'] = [];
 			//get fields of content type
 			foreach (\Drupal::entityManager()->getFieldDefinitions($entity_type_id, $key) as $field_name => $field_definition) {
+				//get avalible fields
 				if (!empty($field_definition->getTargetBundle())) {
 					$data[$key]['fields'][$field_name]['type'] = $field_definition->getType();
 					$data[$key]['fields'][$field_name]['label'] = $field_definition->getLabel();
