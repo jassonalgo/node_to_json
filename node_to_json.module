@@ -18,9 +18,12 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
       }else{
       }
   */
+
+  //get public path
+  $publicPath = file_create_url("public://");
   //get the module config
   $default_config = \Drupal::config('node_to_json.settings');
-  $path = $default_config->get('node_to_json.path');
+  $pathJson = $default_config->get('node_to_json.path');
   $contentType = $default_config->get('node_to_json.content');
 
   $data = [];
@@ -94,7 +97,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
     }
 
     //get and define the file name
-    $path = "public://" . $path;
+    $path = "public://" . $pathJson;
     switch ($fileNameType) {
       case 'nid':
         $fileName = $entity->id();
@@ -109,7 +112,7 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
       //create file
       $file = file_save_data(json_encode($data, JSON_UNESCAPED_SLASHES), $fullPath, FILE_EXISTS_REPLACE);
       if (is_object($file)) {
-        drupal_set_message(t("Json @path file created successfully", array('@path' => $fullPath )), 'status');
+        drupal_set_message(t("Json @path file created successfully", array('@path' => $publicPath."/".$pathJson."/".$fileName.".json" )), 'status');
       } else {
         drupal_set_message(t("Error in file creation"), 'error');
       }
