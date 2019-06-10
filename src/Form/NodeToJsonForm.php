@@ -45,10 +45,12 @@ class NodeToJsonForm extends FormBase {
 	public function buildForm(array $form, FormStateInterface $form_state) {
 		//get config
 		$config = $this->config('node_to_json.settings');
-		$avalibleContentTypes = $config->get('node_to_json.fields');
+		$avalibleContentTypes = $config->get('node_to_json.fields_avalible');
 		$configContentTypes = $config->get('node_to_json.content');
+		//dpm($configContentTypes);
 		//get content type list
 		$list = $this->contentTypeFields();
+
 		$form['list_content_type'] = [
 			'#type' => 'item',
 			'#prefix' => '<div class="bold" >',
@@ -62,7 +64,7 @@ class NodeToJsonForm extends FormBase {
 			if (array_key_exists($key, $configContentTypes)) {
 				$defaultValue = 1;
 			}
-			$form[$key] = array(
+			$form['node_to_json---' . $key] = array(
 				'#type' => 'checkbox',
 				'#title' => $value['label'],
 				'#attributes' => array('class' => array('content-type', $key), 'data-content' => $key),
@@ -80,12 +82,27 @@ class NodeToJsonForm extends FormBase {
 			foreach ($value['fields'] as $key2 => $value2) {
 				if (in_array($value2['type'], $avalibleContentTypes)) {
 					$defaultValue = 0;
+					$defaultValueFileName = 'nid';
+					if (array_key_exists('file_name', $configContentTypes[$key])) {
+						$defaultValueFileName = $configContentTypes[$key]['file_name'];
+					}
 					//verify if field type is checked for add in  create json
-					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key])) {
+					$form[$key . '_fieldset']['name']['node_to_json---' . $key . '---filename'] = [
+						'#type' => 'select',
+						'#title' => $this->t('Chose whoe determinate the name of the file'),
+						'#options' => [
+							'nid' => $this->t('Node id'),
+							'title' => $this->t('Node title'),
+							//'custom' => $this->t('Custom string field'),
+						],
+						'#default_value' => $defaultValueFileName,
+						'#empty_option' => $this->t('-select-'),
+					];
+					if (array_key_exists($key, $configContentTypes) && in_array($key2, $configContentTypes[$key]['fields'])) {
 						$defaultValue = 1;
 					}
 					//print avalible fields
-					$form[$key . '_fieldset']['name'][$key . '-_-' . $key2] = array(
+					$form[$key . '_fieldset']['name']['node_to_json---' . $key . '---' . $key2] = array(
 						'#type' => 'checkbox',
 						'#title' => $value2['label'],
 						'#default_value' => $defaultValue,
@@ -136,7 +153,7 @@ class NodeToJsonForm extends FormBase {
 			drupal_set_message(t("The folder is valid"), 'status');
 		} else {
 			//inform the problem whit permissions
-			$form_state->setErrorByName('path', $this->t(''));
+			$form_state->setErrorByName('path', $this->t('there is a problem it is necessary to review the permits'));
 		}
 	}
 
@@ -154,20 +171,60 @@ class NodeToJsonForm extends FormBase {
 		$configData = [];
 		//get values of form
 		$valuesForm = $form_state->getValues();
-		//dpm(array_keys($valuesForm));
+
 		foreach ($valuesForm as $key => $value) {
 			//search content type checkbox and files
-			if (is_int($value) && $value == 1) {
-				$fieldName = explode("-_-", $key);
-				if (count($fieldName) == 1) {
-					//get content type
-					$configData[$fieldName[0]] = [];
-				} elseif (count($fieldName) == 2 && array_key_exists($fieldName[0], $configData)) {
-					//get field of content type
-					$configData[$fieldName[0]][] = $fieldName[1];
+			if (strpos($key, '---')) {
+				//search namfe file for content
+				dpm($key);
+				dpm($value);
+				$fieldName = explode("---", $key);
+				//determinate what to do based in array length
+				switch (count($fieldName)) {
+				case 2:
+					//validate checkbox content type
+					if (is_int($value) && $value == 1) {
+						$configData[$fieldName[1]]['fields'] = [];
+					}
+					break;
+				case 3:
+					//validate checkbox for field
+					if (is_int($value) && $value == 1) {
+						dpm('campo check valido');
+						if (array_key_exists($fieldName[1], $configData)) {
+							dpm('campo check valido con existencia en array anterior');
+							$configData[$fieldName[1]]['fields'][] = $fieldName[2];
+						}
+					}
+					//validate select for filename
+
+					dpm(is_string($value));
+					dpm(strpos($value, 'filename'));
+					if (array_key_exists($fieldName[1], $configData) && is_string($value) && strpos($key, 'filename')) {
+						dpm('----');
+						switch ($value) {
+						case 'nid':
+							$configData[$fieldName[1]]['file_name'] = 'nid';
+							break;
+
+						case 'title':
+							$configData[$fieldName[1]]['file_name'] = 'title';
+							break;
+						}
+					}
+
+					break;
 				}
+				/*if (count($fieldName) == 1) {
+						//get content type
+
+					} elseif (count($fieldName) == 2 && array_key_exists($fieldName[0], $configData)) {
+						//get field of content type
+						$configData[$fieldName[0]]['fields'][] = $fieldName[1];
+				*/
 			}
 		}
+		dpm($configData);
 		//get and set config module
 		$config = \Drupal::service('config.factory')->getEditable('node_to_json.settings');
 		$config->set('node_to_json.path', $form_state->getValue('path'));
