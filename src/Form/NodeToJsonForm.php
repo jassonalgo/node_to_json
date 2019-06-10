@@ -47,7 +47,6 @@ class NodeToJsonForm extends FormBase {
 		$config = $this->config('node_to_json.settings');
 		$avalibleContentTypes = $config->get('node_to_json.fields_avalible');
 		$configContentTypes = $config->get('node_to_json.content');
-		//dpm($configContentTypes);
 		//get content type list
 		$list = $this->contentTypeFields();
 
@@ -176,8 +175,6 @@ class NodeToJsonForm extends FormBase {
 			//search content type checkbox and files
 			if (strpos($key, '---')) {
 				//search namfe file for content
-				dpm($key);
-				dpm($value);
 				$fieldName = explode("---", $key);
 				//determinate what to do based in array length
 				switch (count($fieldName)) {
@@ -190,18 +187,13 @@ class NodeToJsonForm extends FormBase {
 				case 3:
 					//validate checkbox for field
 					if (is_int($value) && $value == 1) {
-						dpm('campo check valido');
 						if (array_key_exists($fieldName[1], $configData)) {
-							dpm('campo check valido con existencia en array anterior');
 							$configData[$fieldName[1]]['fields'][] = $fieldName[2];
 						}
 					}
 					//validate select for filename
 
-					dpm(is_string($value));
-					dpm(strpos($value, 'filename'));
 					if (array_key_exists($fieldName[1], $configData) && is_string($value) && strpos($key, 'filename')) {
-						dpm('----');
 						switch ($value) {
 						case 'nid':
 							$configData[$fieldName[1]]['file_name'] = 'nid';
@@ -224,7 +216,7 @@ class NodeToJsonForm extends FormBase {
 				*/
 			}
 		}
-		dpm($configData);
+
 		//get and set config module
 		$config = \Drupal::service('config.factory')->getEditable('node_to_json.settings');
 		$config->set('node_to_json.path', $form_state->getValue('path'));

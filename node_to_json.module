@@ -117,6 +117,8 @@ function node_to_json_entity_presave(Drupal\Core\Entity\EntityInterface $entity)
     } else {
       drupal_set_message(t("the folder dont have the rigth permissions"), 'error');
     }
+  }else{
+
   }
   /*
 

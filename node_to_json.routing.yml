@@ -5,3 +5,11 @@ node_to_json.form:
     _title: 'Node to json settings'
   requirements:
     _permission: 'create json file from node'
+node_to_json.api:
+ path: 'api-ceet/node_to_json/node/{nid}'
+ defaults:
+   _controller: '\Drupal\node_to_json\Controller\NodeToJsonController::getNodeRest'
+ methods: [GET]
+ requirements:
+   _access: 'TRUE'
+   nid: \d+
